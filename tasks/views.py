@@ -121,3 +121,25 @@ class TaskUpdateView(APIView):
             status_text="Failed",
             http_status=status.HTTP_400_BAD_REQUEST
         )
+
+class TaskDeleteView(APIView):
+    def delete(self, request, id):
+        try:
+            task = Task.objects.get(id = id)
+
+        except Task.DoesNotExist:
+            return api_response(
+                message = 'Task not found',
+                data = None,
+                status_text="Not found",
+                http_status=status.HTTP_404_NOT_FOUND
+            )
+
+        task.delete()
+
+        return api_response(
+            message = 'Task deleted succesfully',
+            data = None,
+            status_text="Success",
+            http_status=status.HTTP_200_OK
+        )       
