@@ -1,3 +1,4 @@
+from django.core.serializers import serialize
 from django.http import HttpResponse
 from django.shortcuts import render
 from rest_framework import status
@@ -19,6 +20,29 @@ class TaskListView(APIView):
             http_status= status.HTTP_200_OK
         )
 
+# get single task
+class TaskDetailView(APIView):
+    def get(self, request, id):
+        try:
+            task = Task.objects.get(id = id)
+
+        except Task.DoesNotExist:
+            return api_response(
+                message = "Taks not found",
+                data = None,
+                status_text = "Error",
+                http_status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = TaskSerializer(task)
+
+        return api_response(
+            message= "Task retrieved succesfully",
+            data = serializer.data,
+            status_text="Success",
+            http_status=status.HTTP_200_OK
+        )
+
 # create new task
 class TaskCreateView(APIView):
     def post(self, request):
@@ -36,4 +60,3 @@ class TaskCreateView(APIView):
             data = serializer.errors,
             http_status= status.HTTP_400_BAD_REQUEST
         )
-        
