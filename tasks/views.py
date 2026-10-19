@@ -1,4 +1,5 @@
 from django.core.serializers import serialize
+from django.db.migrations import serializer
 from django.http import HttpResponse
 from django.shortcuts import render
 from rest_framework import status
@@ -59,4 +60,44 @@ class TaskCreateView(APIView):
             message = "Failed to create task",
             data = serializer.errors,
             http_status= status.HTTP_400_BAD_REQUEST
+        )
+
+
+# update task
+class TaskUpdateView(APIView):
+    def put(self, request, id):
+        return self.update_task(request, id, partial = False)
+
+    def patch(self, request, id):
+        return self.update_task(request, id, partial = True)
+
+    def update_task(seld, request, id, partial):
+        try:
+            task = Task.objects.get(id = id)
+
+        except Task.DoesNotExist:
+            return api_response(
+                message = 'Task not found',
+                data = None,
+                status_text="Not found",
+                http_status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = TaskSerializer(task, data = request.data, partial = partial)
+
+        if serializer.is_valid():
+            serializer.save()
+            
+            return api_response(
+                message = "Task updated succefully",
+                data = serializer.data,
+                status_text="Success",
+                http_status=status.HTTP_200_OK
+            )
+
+        return api_response(
+            message = "Task update failed",
+            data = None,
+            status_text="Failed",
+            http_status=status.HTTP_400_BAD_REQUEST
         )
